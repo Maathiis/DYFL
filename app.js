@@ -25,6 +25,10 @@ async function startServer() {
     // Connexion à MongoDB
     await connectDB();
     
+    app.listen(PORT, () => {
+      console.log(`Serveur démarré sur le port ${PORT}`);
+    });
+    
     // Fonction principale qui s'exécute périodiquement
     async function main() {
       try {
