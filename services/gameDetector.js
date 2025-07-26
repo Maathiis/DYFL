@@ -4,7 +4,7 @@ dotenv.config();
 
 import { getAllGlobalPlayers, updateGlobalPlayer } from './globalPlayerManager.js';
 import { getQueueType, secondsToMinutes } from '../utils/format.js';
-import { sendDefeatNotification } from './notification.js';
+import { sendDefeatNotification } from './notificationManager.js';
 import fs from 'fs';
 import path from 'path';
 

@@ -14,6 +14,20 @@ const expo = new Expo();
 
 // ===== FONCTIONS DE NOTIFICATIONS =====
 
+export async function sendPushNotification(token, message) {
+  if (!Expo.isExpoPushToken(token)) return;
+
+  await expo.sendPushNotificationsAsync([
+    {
+      to: token,
+      sound: 'default', 
+      title: '🔥 Notification',
+      body: message,
+      data: { custom: 'data' },
+    },
+  ]);
+}
+
 // Notification simple (pour compatibilité)
 export const sendNotification = (message) => {
   // À brancher avec FCM, Expo, etc.
