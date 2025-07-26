@@ -1,4 +1,16 @@
 import { getUsersWithPlayer } from './globalPlayerManager.js';
+import { Expo } from 'expo-server-sdk';
+const expo = new Expo();
+
+/*async function sendDefeatNotification(user) {
+  if (Expo.isExpoPushToken(user.expoPushToken)) {
+    await expo.sendPushNotificationsAsync([{
+      to: user.expoPushToken,
+      title: 'Défaite détectée 🛑',
+      body: 'Ton ami Zoorva a perdu une partie !',
+    }]);
+  }
+}*/
 
 // ===== FONCTIONS DE NOTIFICATIONS =====
 

@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import connectDB from './config/database.js';
 import friendsRoutes from './routes/friends.js';
+import usersRoutes from './routes/users.js';
 import { processAllGlobalPlayers } from './services/gameDetector.js';
 
 dotenv.config();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // Routes API
 app.use('/friends', friendsRoutes);
+app.use('/users', usersRoutes);
 
 // Route de santé
 app.get('/health', (req, res) => {
