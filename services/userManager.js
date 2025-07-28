@@ -15,24 +15,29 @@ function getOrCreateDeviceId() {
   const deviceId = uuidv4();
   return deviceId;
 }
- */
+*/
 
-export async function getOrCreateUser(deviceId) {
+export async function getOrCreateUser(deviceId, pushToken) {
+  console.log(deviceId, pushToken)
   try {
     let user = await User.findOne({ deviceId });
-    
+
     if (!user) {
-      user = new User({ deviceId });
+      user = new User({ deviceId, pushToken });
       await user.save();
     } else {
-      // Mettre à jour lastSeen
       user.lastSeen = new Date();
+
+      if (pushToken && user.pushToken !== pushToken) {
+        user.pushToken = pushToken;
+      }
+
       await user.save();
     }
-    
+
     return user;
   } catch (error) {
-    console.error('Erreur lors de la récupération/création de l\'utilisateur:', error);
+    console.error("Erreur lors de la récupération/création de l'utilisateur:", error);
     throw error;
   }
 }

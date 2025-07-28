@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'deviceId requis' });
     }
     // Création ou récupération de l'utilisateur
-    let user = await getOrCreateUser(deviceId);
+    let user = await getOrCreateUser(deviceId, pushToken);
     // Met à jour le pushToken si fourni
     if (pushToken && user.pushToken !== pushToken) {
       user.pushToken = pushToken;
