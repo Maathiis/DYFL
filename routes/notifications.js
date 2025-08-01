@@ -1,7 +1,9 @@
 import express from 'express';
 import User from '../models/User.js';
 import { sendPushNotification } from '../services/notificationManager.js';
+import { Expo } from 'expo-server-sdk';
 
+const expo = new Expo();
 const router = express.Router();
 
 // POST /push/register
