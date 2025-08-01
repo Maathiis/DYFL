@@ -86,13 +86,22 @@ router.post('/push/test-simple', async (req, res) => {
         const token = 'ExponentPushToken[oG2n4SGizqfsT8B593dGhj]';
         const { title = 'Test notification', body = 'Hello from backend!' } = req.body;
 
-        // Utiliser le SDK Expo au lieu de l'API directe
+        // Vérifier si le token est valide
+        if (!Expo.isExpoPushToken(token)) {
+            return res.status(400).json({ 
+                error: 'Token Expo invalide',
+                token: token 
+            });
+        }
+
+        // Utiliser le SDK Expo avec configuration minimale
         const messages = [{
             to: token,
             sound: 'default',
             title: title,
             body: body,
-            data: { custom: 'data' },
+            priority: 'high',
+            channelId: 'default',
         }];
 
         const chunks = expo.chunkPushNotifications(messages);
@@ -107,10 +116,57 @@ router.post('/push/test-simple', async (req, res) => {
             }
         }
 
+        // Vérifier les résultats
+        const errors = tickets.filter(ticket => ticket.status === 'error');
+        const success = tickets.filter(ticket => ticket.status === 'ok');
+
         res.json({ 
-            success: true, 
-            message: 'Notification envoyée avec succès',
-            tickets: tickets 
+            success: errors.length === 0,
+            message: errors.length === 0 ? 'Notification envoyée avec succès' : 'Erreurs lors de l\'envoi',
+            tickets: tickets,
+            errors: errors,
+            success_count: success.length,
+            error_count: errors.length
+        });
+        
+    } catch (error) {
+        console.error('Erreur lors du test de notification:', error);
+        res.status(500).json({ 
+            error: 'Erreur interne du serveur',
+            message: error.message 
+        });
+    }
+});
+
+// Endpoint alternatif avec API Expo directe
+router.post('/push/test-direct', async (req, res) => {
+    try {
+        const token = 'ExponentPushToken[oG2n4SGizqfsT8B593dGhj]';
+        const { title = 'Test notification', body = 'Hello from backend!' } = req.body;
+
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+            },
+            body: JSON.stringify({
+                to: token,
+                title: title,
+                body: body,
+                sound: 'default',
+                priority: 'high',
+            }),
+        });
+
+        const result = await response.json();
+        
+        res.json({ 
+            success: response.ok,
+            message: response.ok ? 'Notification envoyée avec succès' : 'Erreur lors de l\'envoi',
+            status: response.status,
+            result: result 
         });
         
     } catch (error) {
