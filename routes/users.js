@@ -8,6 +8,8 @@ const router = express.Router();
 router.post('/', async (req, res) => {
   try {
     const { deviceId, pushToken } = req.body;
+    console.log(deviceId, pushToken )
+    console.log(req.body)
     if (!deviceId) {
       return res.status(400).json({ error: 'deviceId requis' });
     }
