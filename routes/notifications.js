@@ -42,32 +42,32 @@ router.post('/push/test', async (req, res) => {
             return res.status(400).json({ error: 'Token manquant' });
         }
 
-        const response = await fetch('https://exp.host/--/api/v2/push/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                to: token,
-                title: title,
-                body: body,
-            }),
-        });
+        // Utiliser le SDK Expo
+        const messages = [{
+            to: token,
+            sound: 'default',
+            title: title,
+            body: body,
+            data: { custom: 'data' },
+        }];
 
-        const result = await response.json();
-        
-        if (response.ok) {
-            res.json({ 
-                success: true, 
-                message: 'Notification envoyée avec succès',
-                result: result 
-            });
-        } else {
-            res.status(400).json({ 
-                error: 'Erreur lors de l\'envoi de la notification',
-                result: result 
-            });
+        const chunks = expo.chunkPushNotifications(messages);
+        const tickets = [];
+
+        for (let chunk of chunks) {
+            try {
+                const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+                tickets.push(...ticketChunk);
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi du chunk:', error);
+            }
         }
+
+        res.json({ 
+            success: true, 
+            message: 'Notification envoyée avec succès',
+            tickets: tickets 
+        });
         
     } catch (error) {
         console.error('Erreur lors du test de notification:', error);
@@ -84,32 +84,32 @@ router.post('/push/test-simple', async (req, res) => {
         const token = 'ExponentPushToken[oG2n4SGizqfsT8B593dGhj]';
         const { title = 'Test notification', body = 'Hello from backend!' } = req.body;
 
-        const response = await fetch('https://exp.host/--/api/v2/push/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                to: token,
-                title: title,
-                body: body,
-            }),
-        });
+        // Utiliser le SDK Expo au lieu de l'API directe
+        const messages = [{
+            to: token,
+            sound: 'default',
+            title: title,
+            body: body,
+            data: { custom: 'data' },
+        }];
 
-        const result = await response.json();
-        
-        if (response.ok) {
-            res.json({ 
-                success: true, 
-                message: 'Notification envoyée avec succès',
-                result: result 
-            });
-        } else {
-            res.status(400).json({ 
-                error: 'Erreur lors de l\'envoi de la notification',
-                result: result 
-            });
+        const chunks = expo.chunkPushNotifications(messages);
+        const tickets = [];
+
+        for (let chunk of chunks) {
+            try {
+                const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+                tickets.push(...ticketChunk);
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi du chunk:', error);
+            }
         }
+
+        res.json({ 
+            success: true, 
+            message: 'Notification envoyée avec succès',
+            tickets: tickets 
+        });
         
     } catch (error) {
         console.error('Erreur lors du test de notification:', error);
