@@ -66,12 +66,18 @@ export const sendDefeatNotification = async (
   queueType,
   playerData,
   matchDuration,
-  lpLoss = 0
+  lpLoss = 0,
+  derankInfo = null
 ) => {
   const { secondsToMinutes } = await import("../utils/format.js");
   const minutes = secondsToMinutes(matchDuration);
 
   let message = `${queueType} - ${riotId} a perdu avec ${playerData.championName} (${playerData.kills}/${playerData.deaths}/${playerData.assists}) en ${minutes} minutes`;
+
+  // Ajouter l'info de derank si présent
+  if (derankInfo) {
+    message += ` + DÉRANK (${derankInfo.oldTier} ${derankInfo.oldRank} → ${derankInfo.newTier} ${derankInfo.newRank})`;
+  }
 
   if (lpLoss > 0) {
     message += ` (-${lpLoss} LP)`;

@@ -254,22 +254,63 @@ export async function detectNewGamesForPlayer(globalPlayer) {
     const playerData = matchDetails.participants.find((p) => p.puuid === puuid);
     if (playerData && !playerData.win) {
       const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
-      // Pour une défaite, lpDiff devrait être négatif (perte de LP)
       const lpLoss = Math.abs(lpDiff);
-      logGameDetector(
-        `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, -${lpLoss} LP`
-      );
+
+      // Vérifier s'il y a eu un derank
+      const oldRank = queueType === "SoloQ" ? oldRanks.soloQ : oldRanks.flex;
+      const newRank = queueType === "SoloQ" ? newRanks.soloQ : newRanks.flex;
+      const hasDerank =
+        oldRank &&
+        newRank &&
+        (oldRank.tier !== newRank.tier || oldRank.rank !== newRank.rank);
+
+      if (hasDerank) {
+        logGameDetector(
+          `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE + DÉRANK (${oldRank.tier} ${oldRank.rank} → ${newRank.tier} ${newRank.rank}), ~${lpLoss} LP perdus`
+        );
+      } else {
+        logGameDetector(
+          `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, -${lpLoss} LP`
+        );
+      }
+
+      // Préparer les infos de derank si nécessaire
+      const derankInfo = hasDerank
+        ? {
+            oldTier: oldRank.tier,
+            oldRank: oldRank.rank,
+            newTier: newRank.tier,
+            newRank: newRank.rank,
+          }
+        : null;
+
       await sendDefeatNotification(
         riotId,
         queueType,
         playerData,
         matchDetails.gameDuration,
-        lpLoss
+        lpLoss,
+        derankInfo
       );
     } else if (playerData) {
       const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
       const lpGain = Math.abs(lpDiff);
-      logGameDetector(`${queueType} - ${riotId} a gagné, +${lpGain} LP`);
+
+      // Vérifier s'il y a eu une promotion
+      const oldRank = queueType === "SoloQ" ? oldRanks.soloQ : oldRanks.flex;
+      const newRank = queueType === "SoloQ" ? newRanks.soloQ : newRanks.flex;
+      const hasPromotion =
+        oldRank &&
+        newRank &&
+        (oldRank.tier !== newRank.tier || oldRank.rank !== newRank.rank);
+
+      if (hasPromotion) {
+        logGameDetector(
+          `${queueType} - ${riotId} a gagné + PROMOTION (${oldRank.tier} ${oldRank.rank} → ${newRank.tier} ${newRank.rank})`
+        );
+      } else {
+        logGameDetector(`${queueType} - ${riotId} a gagné, +${lpGain} LP`);
+      }
     } else {
       logGameDetector(
         `${riotId} → Nouvelle game classée détectée (${queueType}) : données joueur non trouvées.`
@@ -385,15 +426,54 @@ function calculateLPLossOrGain(queueType, oldRanks, newRanks) {
     return 0;
   }
 
-  // Si le tier/rank a changé (promotion/demote), calculer la vraie différence
+  // Si le tier/rank a changé (promotion/demote), calculer avec la logique 100 LP par rank
   if (oldRank.tier !== newRank.tier || oldRank.rank !== newRank.rank) {
-    // On suppose que le joueur a été promu/démote, donc le gain/perte = (nouveau LP - 0) + (100 - ancien LP)
-    // Mais en pratique, Riot reset le LP à 0 ou 100 selon le sens, donc on prend la différence brute
-    return newRank.lp - oldRank.lp;
+    // Déterminer si c'est une promotion ou un derank
+    const isDerank = isHigherRank(oldRank, newRank);
+
+    if (isDerank) {
+      // Derank : perte = ancien LP + (100 - nouveau LP)
+      // Ex: Gold IV 0 LP → Silver I 75 LP = 0 + (100 - 75) = 25 LP perdus
+      const lpLoss = oldRank.lp + (100 - newRank.lp);
+      return -lpLoss;
+    } else {
+      // Promotion : gain = nouveau LP + (100 - ancien LP)
+      // Ex: Silver I 100 LP → Gold IV 0 LP = 0 + (100 - 100) = 0 LP gagnés
+      const lpGain = newRank.lp + (100 - oldRank.lp);
+      return lpGain;
+    }
   }
 
   // Sinon, simple différence
   return newRank.lp - oldRank.lp;
+}
+
+// Helper pour déterminer si un rank est plus élevé qu'un autre
+function isHigherRank(rank1, rank2) {
+  const tierOrder = [
+    "IRON",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND",
+    "MASTER",
+    "GRANDMASTER",
+    "CHALLENGER",
+  ];
+  const rankOrder = ["I", "II", "III", "IV"]; // I est le plus haut, IV le plus bas
+
+  const tier1Index = tierOrder.indexOf(rank1.tier);
+  const tier2Index = tierOrder.indexOf(rank2.tier);
+
+  if (tier1Index > tier2Index) return true;
+  if (tier1Index < tier2Index) return false;
+
+  // Même tier, comparer les ranks
+  const rank1Index = rankOrder.indexOf(rank1.rank);
+  const rank2Index = rankOrder.indexOf(rank2.rank);
+
+  return rank1Index < rank2Index; // I (index 0) est plus haut que IV (index 3)
 }
 
 // Fonction optimisée pour traiter tous les joueurs globaux
