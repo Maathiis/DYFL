@@ -254,20 +254,22 @@ export async function detectNewGamesForPlayer(globalPlayer) {
     const playerData = matchDetails.participants.find((p) => p.puuid === puuid);
     if (playerData && !playerData.win) {
       const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
+      // Pour une défaite, lpDiff devrait être négatif (perte de LP)
+      const lpLoss = Math.abs(lpDiff);
       logGameDetector(
-        `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, ${
-          lpDiff >= 0 ? "-" : "+"
-        }${Math.abs(lpDiff)} LP`
+        `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, -${lpLoss} LP`
       );
       await sendDefeatNotification(
         riotId,
         queueType,
         playerData,
         matchDetails.gameDuration,
-        lpDiff
+        lpLoss
       );
     } else if (playerData) {
-      logGameDetector(`${queueType} - ${riotId} a gagné, pas de notif.`);
+      const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
+      const lpGain = Math.abs(lpDiff);
+      logGameDetector(`${queueType} - ${riotId} a gagné, +${lpGain} LP`);
     } else {
       logGameDetector(
         `${riotId} → Nouvelle game classée détectée (${queueType}) : données joueur non trouvées.`
