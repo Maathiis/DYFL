@@ -63,7 +63,7 @@ export async function createGlobalPlayer(riotId) {
     return globalPlayer;
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la création du joueur global ${riotId}:`,
+      ` Erreur lors de la création du joueur global ${riotId}:`,
       error
     );
     throw error;
@@ -78,29 +78,29 @@ export async function createGlobalPlayer(riotId) {
  */
 export async function getOrCreateGlobalPlayer(riotId) {
   try {
-    console.log(`🔍 [DEBUG] getOrCreateGlobalPlayer pour ${riotId}`);
+    console.log(`[DEBUG] getOrCreateGlobalPlayer pour ${riotId}`);
 
     // Vérifier si le joueur existe déjà
     let globalPlayer = await checkGlobalPlayerExists(riotId);
     console.log(
-      `🔍 [DEBUG] checkGlobalPlayerExists result: ${
+      `[DEBUG] checkGlobalPlayerExists result: ${
         globalPlayer ? "EXISTS" : "NOT_FOUND"
       }`
     );
 
     if (!globalPlayer) {
-      console.log(`🔍 [DEBUG] Joueur non trouvé, création en cours...`);
+      console.log(`[DEBUG] Joueur non trouvé, création en cours...`);
       // Le joueur n'existe pas, on le crée
       globalPlayer = await createGlobalPlayer(riotId);
-      console.log(`✅ [DEBUG] Joueur créé avec succès`);
+      console.log(`[DEBUG] Joueur créé avec succès`);
     } else {
-      console.log(`✅ [DEBUG] Joueur existant trouvé`);
+      console.log(`[DEBUG] Joueur existant trouvé`);
     }
 
     return globalPlayer;
   } catch (error) {
     console.error(
-      `❌ [DEBUG] Erreur dans getOrCreateGlobalPlayer pour ${riotId}:`,
+      ` [DEBUG] Erreur dans getOrCreateGlobalPlayer pour ${riotId}:`,
       error
     );
     throw error;
@@ -131,7 +131,7 @@ export async function updateGlobalPlayer(riotId, updateData) {
     return result;
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la mise à jour du joueur global ${riotId}:`,
+      ` Erreur lors de la mise à jour du joueur global ${riotId}:`,
       error
     );
     throw error;
@@ -176,7 +176,7 @@ export async function refreshGlobalPlayerData(riotId) {
     return updatedPlayer;
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la mise à jour des données pour ${riotId}:`,
+      ` Erreur lors de la mise à jour des données pour ${riotId}:`,
       error
     );
     throw error;
@@ -193,7 +193,7 @@ export async function getAllGlobalPlayers() {
     return await GlobalPlayer.find().sort({ lastUpdated: 1 });
   } catch (error) {
     console.error(
-      "❌ Erreur lors de la récupération des joueurs globaux:",
+      " Erreur lors de la récupération des joueurs globaux:",
       error
     );
     throw error;
@@ -214,7 +214,7 @@ export async function getUsersWithPlayer(riotId) {
     return friends.map((friend) => friend.userId);
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la récupération des utilisateurs pour ${riotId}:`,
+      ` Erreur lors de la récupération des utilisateurs pour ${riotId}:`,
       error
     );
     throw error;
@@ -242,7 +242,7 @@ export async function removeGlobalPlayerIfUnused(riotId) {
     return false;
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la vérification/suppression du joueur global ${riotId}:`,
+      ` Erreur lors de la vérification/suppression du joueur global ${riotId}:`,
       error
     );
     throw error;
@@ -270,7 +270,7 @@ export async function forceRemoveGlobalPlayer(riotId) {
     return false;
   } catch (error) {
     console.error(
-      `❌ Erreur lors de la suppression forcée du joueur global ${riotId}:`,
+      ` Erreur lors de la suppression forcée du joueur global ${riotId}:`,
       error
     );
     throw error;

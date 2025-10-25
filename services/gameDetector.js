@@ -1,12 +1,15 @@
-import axios from 'axios';
-import dotenv from 'dotenv';
+import axios from "axios";
+import dotenv from "dotenv";
 dotenv.config();
 
-import { getAllGlobalPlayers, updateGlobalPlayer } from './globalPlayerManager.js';
-import { getQueueType, secondsToMinutes } from '../utils/format.js';
-import { sendDefeatNotification } from './notificationManager.js';
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
+import { getQueueType } from "../utils/format.js";
+import {
+  getAllGlobalPlayers,
+  updateGlobalPlayer,
+} from "./globalPlayerManager.js";
+import { sendDefeatNotification } from "./notificationManager.js";
 
 const RIOT_API_KEY = process.env.RIOT_API_KEY;
 
@@ -14,16 +17,16 @@ const RIOT_API_KEY = process.env.RIOT_API_KEY;
 const matchCache = new Map();
 const rankCache = new Map();
 
-const LOG_FILE = path.resolve('logs/game-detector.log');
+const LOG_FILE = path.resolve("logs/game-detector.log");
 function logGameDetector(message) {
   const timestamp = new Date().toISOString();
   const logLine = `[${timestamp}] ${message}`;
   console.log(logLine);
   try {
     fs.mkdirSync(path.dirname(LOG_FILE), { recursive: true });
-    fs.appendFileSync(LOG_FILE, logLine + '\n');
+    fs.appendFileSync(LOG_FILE, logLine + "\n");
   } catch (e) {
-    console.error('Erreur écriture fichier log:', e);
+    console.error("Erreur écriture fichier log:", e);
   }
 }
 
@@ -31,13 +34,15 @@ function logGameDetector(message) {
 
 // Helper pour récupérer puuid depuis RiotID (Pseudo#TAGLINE)
 export async function getPuuidFromRiotId(riotId) {
-  const [gameName, tagLine] = riotId.split('#');
+  const [gameName, tagLine] = riotId.split("#");
   if (!gameName || !tagLine) throw new Error("Format RiotID invalide");
 
-  const url = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(tagLine)}`;
+  const url = `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(
+    gameName
+  )}/${encodeURIComponent(tagLine)}`;
 
   const res = await axios.get(url, {
-    headers: { 'X-Riot-Token': RIOT_API_KEY }
+    headers: { "X-Riot-Token": RIOT_API_KEY },
   });
   return res.data.puuid;
 }
@@ -46,7 +51,7 @@ export async function getPuuidFromRiotId(riotId) {
 export async function getDatas(puuid) {
   const url = `https://euw1.api.riotgames.com/lol/league/v4/entries/by-puuid/${puuid}`;
   const res = await axios.get(url, {
-    headers: { 'X-Riot-Token': RIOT_API_KEY }
+    headers: { "X-Riot-Token": RIOT_API_KEY },
   });
   return res.data;
 }
@@ -59,24 +64,24 @@ export async function getPlayerRanks(puuid) {
 
   try {
     const data = await getDatas(puuid);
-    
+
     const ranks = {
       soloQ: null,
-      flex: null
+      flex: null,
     };
 
-    data.forEach(entry => {
-      if (entry.queueType === 'RANKED_SOLO_5x5') {
+    data.forEach((entry) => {
+      if (entry.queueType === "RANKED_SOLO_5x5") {
         ranks.soloQ = {
           tier: entry.tier,
           rank: entry.rank,
-          lp: entry.leaguePoints
+          lp: entry.leaguePoints,
         };
-      } else if (entry.queueType === 'RANKED_FLEX_SR') {
+      } else if (entry.queueType === "RANKED_FLEX_SR") {
         ranks.flex = {
           tier: entry.tier,
           rank: entry.rank,
-          lp: entry.leaguePoints
+          lp: entry.leaguePoints,
         };
       }
     });
@@ -84,7 +89,10 @@ export async function getPlayerRanks(puuid) {
     rankCache.set(puuid, ranks);
     return ranks;
   } catch (error) {
-    console.error(`Erreur lors de la récupération des rangs pour ${puuid}:`, error.response?.data || error.message);
+    console.error(
+      `Erreur lors de la récupération des rangs pour ${puuid}:`,
+      error.response?.data || error.message
+    );
     return { soloQ: null, flex: null };
   }
 }
@@ -100,20 +108,23 @@ export async function getMatchDetails(matchId) {
   try {
     const url = `https://europe.api.riotgames.com/lol/match/v5/matches/${matchId}`;
     const response = await axios.get(url, {
-      headers: { 'X-Riot-Token': RIOT_API_KEY }
+      headers: { "X-Riot-Token": RIOT_API_KEY },
     });
 
     const matchData = {
       queueId: response.data.info.queueId,
       queueType: getQueueType(response.data.info.queueId),
       gameDuration: response.data.info.gameDuration,
-      participants: response.data.info.participants
+      participants: response.data.info.participants,
     };
 
     matchCache.set(matchId, matchData);
     return matchData;
   } catch (error) {
-    console.error(`Erreur lors de la récupération du match ${matchId}:`, error.response?.data || error.message);
+    console.error(
+      `Erreur lors de la récupération du match ${matchId}:`,
+      error.response?.data || error.message
+    );
     return null;
   }
 }
@@ -123,24 +134,27 @@ export async function getLastMatchId(puuid) {
   try {
     const url = `https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids`;
     const response = await axios.get(url, {
-      headers: { 'X-Riot-Token': RIOT_API_KEY },
+      headers: { "X-Riot-Token": RIOT_API_KEY },
       params: {
         start: 0,
-        count: 1
-      }
+        count: 1,
+      },
     });
 
     return response.data.length > 0 ? response.data[0] : null;
   } catch (error) {
-    console.error(`Erreur lors de la récupération du dernier match pour ${puuid}:`, error.response?.data || error.message);
+    console.error(
+      `Erreur lors de la récupération du dernier match pour ${puuid}:`,
+      error.response?.data || error.message
+    );
     return null;
   }
 }
 
 // Helper pour récupérer le dernier match ID par type de file
 const QUEUE_IDS = {
-  'RANKED_SOLO_5x5': 420,
-  'RANKED_FLEX_SR': 440
+  RANKED_SOLO_5x5: 420,
+  RANKED_FLEX_SR: 440,
 };
 
 export async function getLastMatchIdByType(puuid, type) {
@@ -154,19 +168,22 @@ export async function getLastMatchIdByType(puuid, type) {
         params: {
           start: 0,
           count: 1,
-          queue: queueId
+          queue: queueId,
         },
         headers: {
-          'X-Riot-Token': RIOT_API_KEY
-        }
+          "X-Riot-Token": RIOT_API_KEY,
+        },
       }
     );
 
     const matchIds = response.data;
     return matchIds.length > 0 ? matchIds[0] : null;
   } catch (error) {
-    console.error(`Erreur dans getLastMatchIdByType pour ${type}:`, error.response?.data || error.message);
-    throw new Error('Impossible de récupérer le dernier match ID');
+    console.error(
+      `Erreur dans getLastMatchIdByType pour ${type}:`,
+      error.response?.data || error.message
+    );
+    throw new Error("Impossible de récupérer le dernier match ID");
   }
 }
 
@@ -175,56 +192,49 @@ export async function getLastMatchIdByType(puuid, type) {
 // Fonction principale de détection de games pour un joueur global (optimisée)
 export async function detectNewGamesForPlayer(globalPlayer) {
   try {
-    const { riotId, puuid, lastMatchId, lastMatchIdSoloQ, lastMatchIdFlex } = globalPlayer;
+    const { riotId, puuid, lastMatchId, lastMatchIdSoloQ, lastMatchIdFlex } =
+      globalPlayer;
 
     // 1. Récupérer le dernier match (tous modes confondus)
     const latestMatchId = await getLastMatchId(puuid);
     if (!latestMatchId) {
-      logGameDetector(`${riotId} → Pas de match détecté.`);
-      return;
+      return false;
     }
 
     // 2. Récupérer les détails du match (1 seul appel supplémentaire)
     const matchDetails = await getMatchDetails(latestMatchId);
     if (!matchDetails) {
-      logGameDetector(`${riotId} → Erreur lors de la récupération des détails du match.`);
-      return;
+      return false;
     }
 
     // 3. Déterminer le type de queue
     let updateData = { lastMatchId: latestMatchId };
     let queueType = matchDetails.queueType;
     let isRanked = false;
-    if (queueType === 'SoloQ') {
+    if (queueType === "SoloQ") {
       updateData.lastMatchIdSoloQ = latestMatchId;
       isRanked = true;
-    } else if (queueType === 'Flex') {
+    } else if (queueType === "Flex") {
       updateData.lastMatchIdFlex = latestMatchId;
       isRanked = true;
     }
 
     // 4. Cas : dernier match non classé
     if (!isRanked) {
-      if (latestMatchId === lastMatchId) {
-        logGameDetector(`${riotId} → Dernier match non classé mais ancien.`);
-      } else {
-        logGameDetector(`${riotId} → Dernier match non classé.`);
-      }
       // On met à jour lastMatchId même si non classé
       await updateGlobalPlayer(riotId, updateData);
-      return;
+      return false;
     }
 
     // 5. Cas : dernier match classé mais ancien
     if (latestMatchId === lastMatchId) {
-      logGameDetector(`${riotId} → Dernier match classé mais ancien.`);
-      return;
+      return false;
     }
 
     // 6. Nouvelle game classée détectée
     const oldRanks = {
       soloQ: { ...globalPlayer.soloQ },
-      flex: { ...globalPlayer.flex }
+      flex: { ...globalPlayer.flex },
     };
     let newRanks = await getPlayerRanks(puuid);
     updateData.soloQ = newRanks.soloQ || globalPlayer.soloQ;
@@ -234,34 +244,61 @@ export async function detectNewGamesForPlayer(globalPlayer) {
     try {
       await updateGlobalPlayer(riotId, updateData);
     } catch (error) {
-      logGameDetector(`${riotId} → Erreur lors de la mise à jour du joueur global: ${error.message}`);
-      return;
+      logGameDetector(
+        `${riotId} → Erreur lors de la mise à jour du joueur global: ${error.message}`
+      );
+      return false;
     }
 
     // Notifications si défaite en classée
-    const playerData = matchDetails.participants.find(p => p.puuid === puuid);
+    const playerData = matchDetails.participants.find((p) => p.puuid === puuid);
     if (playerData && !playerData.win) {
       const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
-      logGameDetector(`${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, ${lpDiff >= 0 ? '-' : '+'}${Math.abs(lpDiff)} LP`);
-      await sendDefeatNotification(riotId, queueType, playerData, matchDetails.gameDuration, lpDiff);
+      logGameDetector(
+        `${riotId} → Nouvelle game classée détectée (${queueType}) : DÉFAITE, ${
+          lpDiff >= 0 ? "-" : "+"
+        }${Math.abs(lpDiff)} LP`
+      );
+      await sendDefeatNotification(
+        riotId,
+        queueType,
+        playerData,
+        matchDetails.gameDuration,
+        lpDiff
+      );
     } else if (playerData) {
-      const lpDiff = calculateLPLossOrGain(queueType, oldRanks, newRanks);
-      logGameDetector(`${riotId} → Nouvelle game classée détectée (${queueType}) : VICTOIRE, ${lpDiff >= 0 ? '+' : '-'}${Math.abs(lpDiff)} LP`);
+      logGameDetector(`${queueType} - ${riotId} a gagné, pas de notif.`);
     } else {
-      logGameDetector(`${riotId} → Nouvelle game classée détectée (${queueType}) : données joueur non trouvées.`);
+      logGameDetector(
+        `${riotId} → Nouvelle game classée détectée (${queueType}) : données joueur non trouvées.`
+      );
     }
+
+    return true; // Nouvelle game détectée
   } catch (error) {
-    logGameDetector(`${globalPlayer.riotId} → Erreur: ${error.response?.data || error.message}`);
+    logGameDetector(
+      `${globalPlayer.riotId} → Erreur: ${
+        error.response?.data || error.message
+      }`
+    );
+    return false;
   }
 }
 
 // Traitement d'une nouvelle game pour un joueur global
-export async function processNewGameForPlayer(globalPlayer, matchId, queueType, matchDetails) {
+export async function processNewGameForPlayer(
+  globalPlayer,
+  matchId,
+  queueType,
+  matchDetails
+) {
   const { riotId, puuid } = globalPlayer;
-  logGameDetector(`${riotId} → Nouvelle game ${queueType} détectée: ${matchId}`);
+  logGameDetector(
+    `${riotId} → Nouvelle game ${queueType} détectée: ${matchId}`
+  );
 
   // Trouver les données du joueur dans le match
-  const playerData = matchDetails.participants.find(p => p.puuid === puuid);
+  const playerData = matchDetails.participants.find((p) => p.puuid === puuid);
   if (!playerData) {
     logGameDetector(`Joueur ${riotId} non trouvé dans le match.`);
     return;
@@ -270,23 +307,23 @@ export async function processNewGameForPlayer(globalPlayer, matchId, queueType, 
   // Récupérer les anciens rangs avant la mise à jour
   const oldRanks = {
     soloQ: { ...globalPlayer.soloQ },
-    flex: { ...globalPlayer.flex }
+    flex: { ...globalPlayer.flex },
   };
 
   // Mettre à jour les rangs
   const newRanks = await getPlayerRanks(puuid);
-  
+
   // Préparer les données de mise à jour
   const updateData = {
     soloQ: newRanks.soloQ || globalPlayer.soloQ,
-    flex: newRanks.flex || globalPlayer.flex
+    flex: newRanks.flex || globalPlayer.flex,
   };
 
   // Mettre à jour le lastMatchId approprié
-  if (queueType === 'SoloQ') {
+  if (queueType === "SoloQ") {
     updateData.lastMatchIdSoloQ = matchId;
     updateData.lastMatchId = matchId;
-  } else if (queueType === 'Flex') {
+  } else if (queueType === "Flex") {
     updateData.lastMatchIdFlex = matchId;
     updateData.lastMatchId = matchId;
   }
@@ -302,7 +339,13 @@ export async function processNewGameForPlayer(globalPlayer, matchId, queueType, 
   // Traiter la défaite avec notifications multi-utilisateurs
   if (!playerData.win) {
     const lpLoss = calculateLPLoss(queueType, oldRanks, newRanks);
-    await sendDefeatNotification(riotId, queueType, playerData, matchDetails.gameDuration, lpLoss);
+    await sendDefeatNotification(
+      riotId,
+      queueType,
+      playerData,
+      matchDetails.gameDuration,
+      lpLoss
+    );
   } else {
     logGameDetector(`${queueType} - ${riotId} a gagné, pas de notif.`);
   }
@@ -310,8 +353,8 @@ export async function processNewGameForPlayer(globalPlayer, matchId, queueType, 
 
 // Calculer la perte de LP
 function calculateLPLoss(queueType, oldRanks, newRanks) {
-  const oldRank = queueType === 'SoloQ' ? oldRanks.soloQ : oldRanks.flex;
-  const newRank = queueType === 'SoloQ' ? newRanks.soloQ : newRanks.flex;
+  const oldRank = queueType === "SoloQ" ? oldRanks.soloQ : oldRanks.flex;
+  const newRank = queueType === "SoloQ" ? newRanks.soloQ : newRanks.flex;
 
   if (!oldRank || !newRank || !oldRank.lp || !newRank.lp) {
     return 0;
@@ -328,10 +371,15 @@ function calculateLPLoss(queueType, oldRanks, newRanks) {
 
 // Calculer la perte ou le gain de LP, même en cas de promotion/demote
 function calculateLPLossOrGain(queueType, oldRanks, newRanks) {
-  const oldRank = queueType === 'SoloQ' ? oldRanks.soloQ : oldRanks.flex;
-  const newRank = queueType === 'SoloQ' ? newRanks.soloQ : newRanks.flex;
+  const oldRank = queueType === "SoloQ" ? oldRanks.soloQ : oldRanks.flex;
+  const newRank = queueType === "SoloQ" ? newRanks.soloQ : newRanks.flex;
 
-  if (!oldRank || !newRank || typeof oldRank.lp !== 'number' || typeof newRank.lp !== 'number') {
+  if (
+    !oldRank ||
+    !newRank ||
+    typeof oldRank.lp !== "number" ||
+    typeof newRank.lp !== "number"
+  ) {
     return 0;
   }
 
@@ -351,40 +399,65 @@ export async function processAllGlobalPlayers() {
   try {
     // Récupérer tous les joueurs globaux uniques
     const globalPlayers = await getAllGlobalPlayers();
-    
-    logGameDetector(`Traitement de ${globalPlayers.length} joueurs globaux uniques...`);
-    
+
+    logGameDetector(
+      `Traitement de ${globalPlayers.length} joueurs globaux uniques...`
+    );
+
     if (globalPlayers.length === 0) {
-      logGameDetector('Aucun joueur global trouvé en base de données.');
+      logGameDetector("Aucun joueur global trouvé en base de données.");
       return;
     }
+
+    // Compteur pour les nouvelles games détectées
+    let newGamesDetected = 0;
 
     // Traiter les joueurs en parallèle avec limitation pour éviter de surcharger l'API
     const batchSize = 3; // Traiter 3 joueurs à la fois
     for (let i = 0; i < globalPlayers.length; i += batchSize) {
       const batch = globalPlayers.slice(i, i + batchSize);
-      await Promise.all(batch.map(player => detectNewGamesForPlayer(player)));
-      
+      const results = await Promise.all(
+        batch.map((player) => detectNewGamesForPlayer(player))
+      );
+
+      // Compter les nouvelles games détectées
+      results.forEach((result) => {
+        if (result === true) newGamesDetected++;
+      });
+
       // Pause entre les batches pour respecter les limites de l'API
       if (i + batchSize < globalPlayers.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-    
-    logGameDetector('Traitement terminé.');
-    
+
+    // Message de résumé
+    if (newGamesDetected === 0) {
+      logGameDetector("Traitement terminé, pas de nouveau match.");
+    } else {
+      logGameDetector(
+        `Traitement terminé. ${newGamesDetected} nouvelle(s) game(s) détectée(s).`
+      );
+    }
+
     // Nettoyer le cache périodiquement
-    if (Math.random() < 0.1) { // 10% de chance de nettoyer
+    if (Math.random() < 0.1) {
+      // 10% de chance de nettoyer
       matchCache.clear();
       rankCache.clear();
     }
   } catch (error) {
-    logGameDetector('Erreur lors du traitement des joueurs globaux: ' + (error?.message || error));
+    logGameDetector(
+      "Erreur lors du traitement des joueurs globaux: " +
+        (error?.message || error)
+    );
   }
 }
 
 // Fonction de compatibilité (dépréciée)
 export async function processAllFriends() {
-  logGameDetector('processAllFriends est déprécié, utilisez processAllGlobalPlayers à la place');
+  logGameDetector(
+    "processAllFriends est déprécié, utilisez processAllGlobalPlayers à la place"
+  );
   return processAllGlobalPlayers();
-} 
+}

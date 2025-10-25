@@ -2448,3 +2448,47 @@
 [2025-10-24T09:31:32.657Z] Aucun joueur global trouvé en base de données.
 [2025-10-24T09:31:38.382Z] Traitement de 0 joueurs globaux uniques...
 [2025-10-24T09:31:38.383Z] Aucun joueur global trouvé en base de données.
+[2025-10-24T09:32:48.185Z] Traitement de 0 joueurs globaux uniques...
+[2025-10-24T09:32:48.186Z] Aucun joueur global trouvé en base de données.
+[2025-10-24T09:34:48.236Z] Traitement de 0 joueurs globaux uniques...
+[2025-10-24T09:34:48.237Z] Aucun joueur global trouvé en base de données.
+[2025-10-24T09:36:48.221Z] Traitement de 0 joueurs globaux uniques...
+[2025-10-24T09:36:48.223Z] Aucun joueur global trouvé en base de données.
+[2025-10-24T09:38:48.235Z] Traitement de 0 joueurs globaux uniques...
+[2025-10-24T09:38:48.238Z] Aucun joueur global trouvé en base de données.
+[2025-10-24T09:40:48.206Z] Traitement de 1 joueurs globaux uniques...
+[2025-10-24T09:40:48.410Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:40:48.411Z] Traitement terminé.
+[2025-10-24T09:42:48.244Z] Traitement de 2 joueurs globaux uniques...
+[2025-10-24T09:42:48.425Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:42:48.426Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:42:48.426Z] Traitement terminé.
+[2025-10-24T09:44:48.219Z] Traitement de 2 joueurs globaux uniques...
+[2025-10-24T09:44:48.409Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:44:48.417Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:44:48.418Z] Traitement terminé.
+[2025-10-24T09:47:48.170Z] Erreur lors du traitement des joueurs globaux: getaddrinfo ENOTFOUND ac-8prjuh9-shard-00-02.dpkv0kn.mongodb.net
+[2025-10-24T09:49:18.578Z] Traitement de 2 joueurs globaux uniques...
+[2025-10-24T09:49:18.830Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:49:18.830Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:49:18.831Z] Traitement terminé.
+[2025-10-24T09:51:18.207Z] Traitement de 3 joueurs globaux uniques...
+[2025-10-24T09:51:18.425Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:51:18.452Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:51:18.463Z] Inoxtag2#EUW → Pas de match détecté.
+[2025-10-24T09:51:18.463Z] Traitement terminé.
+[2025-10-24T09:53:18.206Z] Traitement de 3 joueurs globaux uniques...
+[2025-10-24T09:53:18.399Z] Inoxtag2#EUW → Pas de match détecté.
+[2025-10-24T09:53:18.404Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:53:18.433Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:53:18.433Z] Traitement terminé.
+[2025-10-24T09:55:18.205Z] Traitement de 3 joueurs globaux uniques...
+[2025-10-24T09:55:18.456Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:55:18.457Z] Inoxtag2#EUW → Pas de match détecté.
+[2025-10-24T09:55:18.457Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:55:18.457Z] Traitement terminé.
+[2025-10-24T09:57:18.192Z] Traitement de 3 joueurs globaux uniques...
+[2025-10-24T09:57:18.387Z] Inoxtag2#EUW → Pas de match détecté.
+[2025-10-24T09:57:18.392Z] Zoorva#EUW → Pas de match détecté.
+[2025-10-24T09:57:18.395Z] 顽皮的小精灵#VAN → Pas de match détecté.
+[2025-10-24T09:57:18.396Z] Traitement terminé.

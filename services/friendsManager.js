@@ -50,7 +50,7 @@ export async function getFriendsByUserId(userId) {
 
     return friendsWithData;
   } catch (error) {
-    console.error("❌ Erreur lors de la récupération des amis:", error);
+    console.error(" Erreur lors de la récupération des amis:", error);
     throw error;
   }
 }
@@ -71,18 +71,16 @@ export async function addFriend(userId, riotId) {
     // Vérifier si l'ami existe déjà pour cet utilisateur
     const existingFriend = await Friend.findOne({ userId, riotId });
     if (existingFriend) {
-      console.log(`❌ [DEBUG] Ami déjà existant: ${riotId}`);
+      console.log(` [DEBUG] Ami déjà existant: ${riotId}`);
       throw new Error("Cet ami est déjà dans votre liste");
     }
-    console.log(`✅ [DEBUG] Ami non existant, on continue`);
+    console.log(`[DEBUG] Ami non existant, on continue`);
 
     // Vérifier/créer le joueur global
     // Si le joueur n'existe pas dans GlobalPlayer, il sera créé automatiquement
-    console.log(`🔍 [DEBUG] Appel getOrCreateGlobalPlayer pour ${riotId}`);
+    console.log(`[DEBUG] Appel getOrCreateGlobalPlayer pour ${riotId}`);
     const globalPlayer = await getOrCreateGlobalPlayer(riotId);
-    console.log(
-      `✅ [DEBUG] GlobalPlayer récupéré/créé: ${globalPlayer.riotId}`
-    );
+    console.log(`[DEBUG] GlobalPlayer récupéré/créé: ${globalPlayer.riotId}`);
 
     // Créer la relation d'ami
     const friend = new Friend({
@@ -107,7 +105,7 @@ export async function addFriend(userId, riotId) {
       // Erreur de doublon (index unique)
       throw new Error("Cet ami est déjà dans votre liste");
     }
-    console.error("❌ Erreur lors de l'ajout de l'ami:", error);
+    console.error(" Erreur lors de l'ajout de l'ami:", error);
     throw error;
   }
 }
@@ -133,7 +131,7 @@ export async function removeFriend(userId, riotId) {
 
     return result;
   } catch (error) {
-    console.error("❌ Erreur lors de la suppression de l'ami:", error);
+    console.error(" Erreur lors de la suppression de l'ami:", error);
     throw error;
   }
 }
@@ -185,7 +183,7 @@ export async function removeFriendsBatch(userId, riotIds, force = false) {
       return response;
     }
   } catch (error) {
-    console.error("❌ Erreur lors de la suppression en lot:", error);
+    console.error(" Erreur lors de la suppression en lot:", error);
     throw error;
   }
 }
@@ -227,7 +225,7 @@ export async function getFriendsStats(userId) {
 
     return stats;
   } catch (error) {
-    console.error("❌ Erreur lors de la récupération des statistiques:", error);
+    console.error(" Erreur lors de la récupération des statistiques:", error);
     throw error;
   }
 }
