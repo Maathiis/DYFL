@@ -5,6 +5,7 @@ dotenv.config();
 import fs from "fs";
 import path from "path";
 import { getQueueType } from "../utils/format.js";
+import { retryWithBackoff } from "../utils/riotErrorHandler.js";
 import {
   getAllGlobalPlayers,
   updateGlobalPlayer,
@@ -41,10 +42,17 @@ export async function getPuuidFromRiotId(riotId) {
     gameName
   )}/${encodeURIComponent(tagLine)}`;
 
-  const res = await axios.get(url, {
-    headers: { "X-Riot-Token": RIOT_API_KEY },
-  });
-  return res.data.puuid;
+  return retryWithBackoff(
+    async () => {
+      const res = await axios.get(url, {
+        headers: { "X-Riot-Token": RIOT_API_KEY },
+        timeout: 10000, // 10 secondes de timeout
+      });
+      return res.data.puuid;
+    },
+    3,
+    1000
+  );
 }
 
 // Helper pour récupérer les rangs d'un joueur (SoloQ et Flex)
